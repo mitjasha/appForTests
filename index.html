@@ -16,39 +16,41 @@
 
 <div id="app" class="col-lg-12">
   <div>
-    <b-button id="show-btn" @click="showModal">Open Modal</b-button>
-    <b-button id="toggle-btn" @click="toggleModal">Toggle Modal</b-button>
+    <b-button id="addTest-btn" @click.prevent="show_modal"> Добавить вопрос </b-button>
+    <!-- <b-button id="toggle-btn" @click="toggle_modal">Toggle Modal</b-button> -->
+    <b-button id="startTest-btn" @click.prevent="start_test"> Начать тест </b-button>
 
-    <b-modal ref="my-modal" hide-footer title="Using Component Methods">
+    <b-modal ref="my-modal" hide-footer title="Добавление вопроса">
       <div class="d-block text-center">
         <div>
-          <label>Добавление вопроса</label>
+          <label>Введите текст вопроса</label>
             <div>
-              <input v-model="new_question.content">
+              <b-input v-model="new_question.content">
             </div>
-            <label>Добавление ответов</label>
+            <label>Добавление вариантов ответов</label>
             <div v-for="answer, index in new_question.answers">
-              <input v-model="new_question.answers[index].answer">
+              <b-input v-model="new_question.answers[index].answer">
             </div>
-            <label>Правильные ответы</label>
+            <label>Введите номера правильных ответов через запятую. Нумерация начинается с 1</label>
             <div>
-              <input type="text" v-model="new_question.correct_answers" placeholder="Правильные ответы через запятую">
-            </div>
-
-            <button @click.prevent="add_new_question_to_questions">Добавить</button>
+              <b-input v-model="new_question.correct_answers">              
+            </div>            
         </div>
       </div>
-      <b-button class="mt-3" variant="outline-danger" block @click="hideModal">Close Me</b-button>
-      <b-button class="mt-2" variant="outline-warning" block @click="toggleModal">Toggle Me</b-button>
+      <br>
+      <b-button @click.prevent="add_new_question_to_questions"> Добавить </b-button>
+      <b-button id="close-btn" variant="outline-danger" @click.prevent="hide_modal"> Закрыть </b-button>
+      <!-- <b-button class="mt-2" variant="outline-warning" block @click="toggle_modal">Toggle Me</b-button> -->
     </b-modal>
   </div>
+  <div v-if="!!start_flag">
     <ul class="list-group">
       <!-- цикл for в контексте VueJS  v-for="sequence_element, index in sequence"  -->
 
       <li class="list-group-item" v-for="question, index in questions">
         <span> {{question.content}} </span>
         <div v-for="answer, index in question.answers">
-          <input style="" type="checkbox" v-model="question.answers[index].mark" :disabled="!!test_result">
+          <input type="checkbox" v-model="question.answers[index].mark" :disabled="!!test_result">
           <label> {{answer.answer}} </label>
         </div>
 
@@ -56,11 +58,16 @@
         либо v-on:click.prevent="some_method()"  -->
       </li>
     </ul>
-
     <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers()"> Ответ </button>
+    
+  </div>
+
+    <!-- <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers()"> Ответ </button> -->
 
     <div v-if="!!test_result">
       Правильных ответов {{test_result}} из {{questions.length}}
+      <br>
+      <b-button variant="outline-danger" @click.prevent="start_test"> Пройти тест ещё раз </b-button>
     </div>
   </div>
 
@@ -81,12 +88,96 @@
         questions: [
           {
             id: 1,
+            content: "Какое (какие) из утверждений является (являются) верным (верными)?",
+            answers: [
+              {
+                id: 1,
+                answer: "Разработчик ПО не занимается тестированием программного кода",
+                mark: false
+              },
+              {
+                id: 2,
+                answer: "Monkey testing всегда проводится по четко определенным сценариям",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Чек-листом является документ, который описывает, что должно быть протестировано",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "естирование - это следствие отладки программы",
+                mark: false
+              }
+            ],
+            correct_answers: [3]
+          },
+          {
+            id: 2,
+            content: "Процесс тестирования конкретной функции с использованием кода называется:",
+            answers: [
+              {
+                id: 1,
+                answer: "Функциональным тестированием",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Unit тестированием",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Дымовым тестированием",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Тестированием серого ящика",
+                mark: false
+              }
+            ],
+            correct_answers: [2]
+          },
+          {
+            id: 3,
+            content: "Какое (какие) определение (определения) наиболее точно описывает (описывают) понятие “покрытие кода тестами”?",
+            answers: [
+              {
+                id: 1,
+                answer: "Процесс составления тестовых сценариев с целью максимального охвата функций, операторов и логики ПО",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Метод анализа, который определяет какие части ПО были проверены набором тестов",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Систематическая проверка исходного кода с целью обнаружения и исправления ошибок",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Это инструмент, который позволяет оценить качество исходного кода",
+                mark: false
+              }
+            ],
+            correct_answers: [2]
+          },
+          {
+            id: 4,
             content: "Какое (какие) из предложенных определений описывает (описывают) принцип DRY?",
             answers: [
               {
                 id: 1,
                 answer: "Каждая часть знания должна иметь единственное, непротиворечивое и авторитетное представление в рамках системы",
-                mark: true
+                mark: false,
+
               },
               {
                 id: 2,
@@ -97,55 +188,69 @@
                 id: 3,
                 answer: "Принцип DRY утверждает, что большинство систем работают лучше всего, если они остаются простыми, а не усложняются",
                 mark: false
-              }
-            ],
-            correct_answers: [1, 3]
-          },
-          {
-            id: 2,
-            content: "qweqweqwe Какое (какие) из предложенных определений описывает (описывают) принцип DRY?",
-            answers: [
+              },
               {
                 id: 4,
-                answer: "Каждая часть знания должна иметь единственное, непротиворечивое и авторитетное представление в рамках системы",
+                answer: "Клиентский код не должен зависеть от интерфейсов, которые он не использует",
+                mark: false
+              }
+            ],
+            correct_answers: [1, 2]
+          },
+          {
+            id: 5,
+            content: "Что из перечисленного является примером тестирования?",
+            answers: [
+              {
+                id: 1,
+                answer: "Несколько раз ввести неправильный код от домофона",
                 mark: false,
 
               },
               {
-                id: 5,
-                answer: "Это принцип уменьшения количества повторений в коде, обращение к единственному источнику - или «фрагменту» - многократно используемого кода всякий раз, когда он вам нужен",
+                id: 2,
+                answer: "Попробовать зарядить iPhone зарядным устройством от телефона с операционной системой Android",
                 mark: false
               },
               {
-                id: 6,
-                answer: "Принцип DRY утверждает, что большинство систем работают лучше всего, если они остаются простыми, а не усложняются",
+                id: 3,
+                answer: "Попытаться разогнать автомобиль выше скорости указанной на спидометре",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Заварить кофе в холодной воде",
                 mark: false
               }
             ],
-            correct_answers: [6]
+            correct_answers: [1, 2, 3, 4]
           }
         ],
+        start_flag: null,
         test_result: null,
         new_question: this.create_new_question()
       }
     },
     methods: {
-      showModal() {
+      show_modal() {
         this.$refs['my-modal'].show()
       },
-      hideModal() {
+      hide_modal() {
         this.$refs['my-modal'].hide()
       },
-      toggleModal() {
+      toggle_modal() {
         // We pass the ID of the button that we want to return focus to
         // when the modal has hidden
         this.$refs['my-modal'].toggle('#toggle-btn')
+      },
+      start_test(){
+        this.start_flag = 1 - this.start_flag
+        this.test_result = null
       },
       add_new_question_to_questions: function () {
         this.new_question.correct_answers = this.new_question.correct_answers.split(",")
         this.questions.push(this.new_question);
         this.new_question = this.create_new_question();
-
       },
       create_new_question: function () {
         return {
@@ -174,7 +279,6 @@
               }
             ],
             correct_answers: []
-
         }
       },
       get_correct_answers: function () {
@@ -197,11 +301,12 @@
               questionAnswer.push(answer.id)
             }
           })
+          console.log(JSON.stringify(this.questions[index].correct_answers))
           if (JSON.stringify(questionAnswer) === JSON.stringify(this.questions[index].correct_answers)) {
             result.push(1)
           }
         })
-        this.test_result = result.length.toString()
+        this.test_result = result.length.toString()        
       },
     },
     // хук жизненного цикла экзепляра VueJS. при монтировании экземпляра будут выполнены инструкции внутри хука
