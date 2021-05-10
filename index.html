@@ -1,0 +1,357 @@
+<!-- Load required Bootstrap and BootstrapVue CSS -->
+<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
+<!-- Load polyfills to support older browsers -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
+
+<!-- Load Vue followed by BootstrapVue -->
+<script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+<script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+<!-- Load the following for BootstrapVueIcons support -->
+<script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
+<div id="app" class="col-lg-12">
+  <div>
+    <b-button id="addTest-btn" @click.prevent="show_modal" v-if="!start_flag"> Добавить вопрос </b-button>
+    <!-- <b-button id="toggle-btn" @click="toggle_modal">Toggle Modal</b-button> -->
+    <b-button id="startTest-btn" @click.prevent="start_test"> {{start_flag ? `Отменить тест` : `Начать тест`}}  </b-button>
+
+    <b-modal ref="my-modal" hide-footer title="Добавление вопроса">
+      <div class="d-block text-center">
+        <div>
+          <label>Введите текст вопроса</label>
+            <div>
+              <b-input v-model.trim="new_question.content">
+            </div>
+            <label>Добавление вариантов ответов</label>
+            <div v-for="answer, index in new_question.answers">
+              <b-input v-model.trim="new_question.answers[index].answer">
+            </div>
+            <label>Введите номера правильных ответов через запятую. Нумерация начинается с 1</label>
+            <div>
+              <b-input v-model.trim="new_question.correct_answers_as_str">
+            </div>
+        </div>
+      </div>
+      <br>
+      <b-button @click.prevent="add_new_question_to_questions"> Добавить </b-button>
+      <b-button id="close-btn" variant="outline-danger" @click.prevent="hide_modal"> Закрыть </b-button>
+      <!-- <b-button class="mt-2" variant="outline-warning" block @click="toggle_modal">Toggle Me</b-button> -->
+    </b-modal>
+  </div>
+  <div v-if="!!start_flag">
+    <ul class="list-group">
+      <!-- цикл for в контексте VueJS  v-for="sequence_element, index in sequence"  -->
+
+      <li class="list-group-item" v-for="question, index in questions">
+        <span> {{question.content}} </span>
+        <div v-for="answer, index in question.answers">
+          <input type="checkbox" v-model="question.answers[index].mark" :disabled="!!test_result">
+          <label> {{answer.answer}} </label>
+        </div>
+      </li>
+    </ul>
+    <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers"> Ответ </button>
+
+  </div>
+    <div v-if="!!test_result">
+      Правильных ответов {{test_result}} из {{questions.length}}
+      <br>
+      <b-button variant="outline-danger" @click.prevent="start_test"> Пройти тест ещё раз </b-button>
+    </div>
+</div>
+
+
+<script>
+    // let axios_instance = axios.create(
+    // );
+  </script>
+
+
+<script>
+
+  new Vue({
+    el: '#app',
+    delimiters: ['{{', '}}'],
+    data: function () {
+      return {
+        questions: [
+          {
+            id: 1,
+            content: "Какое (какие) из утверждений является (являются) верным (верными)?",
+            answers: [
+              {
+                id: 1,
+                answer: "Разработчик ПО не занимается тестированием программного кода",
+                mark: false
+              },
+              {
+                id: 2,
+                answer: "Monkey testing всегда проводится по четко определенным сценариям",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Чек-листом является документ, который описывает, что должно быть протестировано",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "естирование - это следствие отладки программы",
+                mark: false
+              }
+            ],
+            correct_answers: [3]
+          },
+          {
+            id: 2,
+            content: "Процесс тестирования конкретной функции с использованием кода называется:",
+            answers: [
+              {
+                id: 1,
+                answer: "Функциональным тестированием",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Unit тестированием",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Дымовым тестированием",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Тестированием серого ящика",
+                mark: false
+              }
+            ],
+            correct_answers: [2]
+          },
+          {
+            id: 3,
+            content: "Какое (какие) определение (определения) наиболее точно описывает (описывают) понятие “покрытие кода тестами”?",
+            answers: [
+              {
+                id: 1,
+                answer: "Процесс составления тестовых сценариев с целью максимального охвата функций, операторов и логики ПО",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Метод анализа, который определяет какие части ПО были проверены набором тестов",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Систематическая проверка исходного кода с целью обнаружения и исправления ошибок",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Это инструмент, который позволяет оценить качество исходного кода",
+                mark: false
+              }
+            ],
+            correct_answers: [2]
+          },
+          {
+            id: 4,
+            content: "Какое (какие) из предложенных определений описывает (описывают) принцип DRY?",
+            answers: [
+              {
+                id: 1,
+                answer: "Каждая часть знания должна иметь единственное, непротиворечивое и авторитетное представление в рамках системы",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Это принцип уменьшения количества повторений в коде, обращение к единственному источнику - или «фрагменту» - многократно используемого кода всякий раз, когда он вам нужен",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Принцип DRY утверждает, что большинство систем работают лучше всего, если они остаются простыми, а не усложняются",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Клиентский код не должен зависеть от интерфейсов, которые он не использует",
+                mark: false
+              }
+            ],
+            correct_answers: [1, 2]
+          },
+          {
+            id: 5,
+            content: "Что из перечисленного является примером тестирования?",
+            answers: [
+              {
+                id: 1,
+                answer: "Несколько раз ввести неправильный код от домофона",
+                mark: false,
+
+              },
+              {
+                id: 2,
+                answer: "Попробовать зарядить iPhone зарядным устройством от телефона с операционной системой Android",
+                mark: false
+              },
+              {
+                id: 3,
+                answer: "Попытаться разогнать автомобиль выше скорости указанной на спидометре",
+                mark: false
+              },
+              {
+                id: 4,
+                answer: "Заварить кофе в холодной воде",
+                mark: false
+              }
+            ],
+            correct_answers: [1, 2, 3, 4]
+          }
+        ],
+        start_flag: false,
+        test_result: null,
+        new_question: this.create_new_question()
+      }
+    },
+    methods: {
+      show_modal() {
+        this.$refs['my-modal'].show()
+      },
+      hide_modal() {
+        this.$refs['my-modal'].hide()
+      },
+      // toggle_modal() {
+      //   // We pass the ID of the button that we want to return focus to
+      //   // when the modal has hidden
+      //   this.$refs['my-modal'].toggle('#toggle-btn')
+      // },
+      start_test(){
+        this.start_flag = !this.start_flag
+        this.test_result = null
+        this.questions.forEach(question=>{
+          question.answers.forEach(answer => {
+            answer.mark = false
+          })
+        })
+      },
+      verify_answers: function () {
+        let flag = true;
+        this.new_question.answers.forEach((answer, index) => {
+            if (!!!answer.answer) {
+              alert(`empty input ${index + 1}`)
+              flag = false
+            }
+          })
+        return flag
+      },
+      verify_correct_answers: function () {
+        this.new_question.correct_answers.forEach((answer, index) => {
+          if (!isNaN(answer)) {
+            this.new_question.correct_answers[index] = Number(answer)
+            // if (1 > this.new_question.correct_answers[index] > 4) {
+            //   alert(`wrong type of answer ${index + 1}`)
+            // }
+          } else {
+            alert(`wrong type of answer ${index + 1}`)
+          }
+        })
+      },
+      add_new_question_to_questions: function () {
+        this.new_question.correct_answers = this.correct_answer_to_int_array()
+        if (this.verify_answers()) {
+          delete this.new_question.correct_answers_as_str
+          this.questions.push(this.new_question);
+          this.new_question = this.create_new_question();
+        }
+      },
+      create_new_question: function () {
+        return {
+            id: null,
+            content: "",
+            answers: [
+              {
+                id: 1,
+                answer: null,
+                mark: false
+              },
+              {
+                id: 2,
+                answer: null,
+                mark: false
+              },
+              {
+                id: 3,
+                answer: null,
+                mark: false
+              },
+              {
+                id: 4,
+                answer: null,
+                mark: false
+              }
+            ],
+            correct_answers_as_str: null,
+            correct_answers: [],
+        }
+      },
+      correct_answer_to_int_array: function(){
+        if (!!!this.new_question.correct_answers_as_str) {
+          alert("VSE PROPALO"); return
+        }
+        this.new_question.correct_answers = this.new_question.correct_answers_as_str.split(',')
+        this.verify_correct_answers()
+      },
+      get_correct_answers: function () {
+        let result = [];
+        this.questions.forEach(question => {
+          let t = {}
+          t[question.id] = question.correct_answers
+          console.log("LENGTH", t[question.id].length)
+          result.push(t)
+        })
+        return result
+      },
+      accept_answers: function () {
+        let result = [];
+        let notAnsweredQuestion = null
+        this.questions.forEach((question, index)=> {
+          let questionAnswer = {}
+          questionAnswer = []
+          let notAnswered = true
+          question.answers.forEach(answer => {
+            if (answer.mark) {
+              notAnswered = false;
+              questionAnswer.push(answer.id)
+            }
+          })
+          if (notAnswered) {
+            notAnsweredQuestion = index + 1
+            alert(`empty answer ${notAnsweredQuestion}`)
+          }
+          if (JSON.stringify(questionAnswer) === JSON.stringify(this.questions[index].correct_answers)) {
+            result.push(1)
+          }
+        })
+        if (notAnsweredQuestion !== null) {
+          return false
+        }
+        this.test_result = result.length.toString()
+      },
+    },
+    // хук жизненного цикла экзепляра VueJS. при монтировании экземпляра будут выполнены инструкции внутри хука
+    mounted: function () {
+      // вызываем метод экземпляра для получения списка объектов
+      // this.get_department_list()
+    }
+  })
+</script>
