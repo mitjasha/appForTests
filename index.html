@@ -1,5 +1,3 @@
-<!-- Add this to <head> -->
-
 <!-- Load required Bootstrap and BootstrapVue CSS -->
 <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
 <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
@@ -25,15 +23,15 @@
         <div>
           <label>Введите текст вопроса</label>
             <div>
-              <b-input v-model="new_question.content">
+              <b-input v-model.trim="new_question.content">
             </div>
             <label>Добавление вариантов ответов</label>
             <div v-for="answer, index in new_question.answers">
-              <b-input v-model="new_question.answers[index].answer">
+              <b-input v-model.trim="new_question.answers[index].answer">
             </div>
             <label>Введите номера правильных ответов через запятую. Нумерация начинается с 1</label>
             <div>
-              <b-input v-model="new_question.correct_answers">              
+              <b-input v-model.trim="new_question.correct_answers">              
             </div>            
         </div>
       </div>
@@ -53,23 +51,17 @@
           <input type="checkbox" v-model="question.answers[index].mark" :disabled="!!test_result">
           <label> {{answer.answer}} </label>
         </div>
-
-        <!-- навешиваем на кнопку действие возможны два варианта @click.prevent="some_method()"
-        либо v-on:click.prevent="some_method()"  -->
       </li>
     </ul>
     <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers()"> Ответ </button>
     
-  </div>
-
-    <!-- <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers()"> Ответ </button> -->
-
+  </div>    
     <div v-if="!!test_result">
       Правильных ответов {{test_result}} из {{questions.length}}
       <br>
       <b-button variant="outline-danger" @click.prevent="start_test"> Пройти тест ещё раз </b-button>
     </div>
-  </div>
+</div>
 
 
 <script>
@@ -238,11 +230,11 @@
       hide_modal() {
         this.$refs['my-modal'].hide()
       },
-      toggle_modal() {
-        // We pass the ID of the button that we want to return focus to
-        // when the modal has hidden
-        this.$refs['my-modal'].toggle('#toggle-btn')
-      },
+      // toggle_modal() {
+      //   // We pass the ID of the button that we want to return focus to
+      //   // when the modal has hidden
+      //   this.$refs['my-modal'].toggle('#toggle-btn')
+      // },
       start_test(){
         this.start_flag = 1 - this.start_flag
         this.test_result = null
@@ -280,6 +272,12 @@
             ],
             correct_answers: []
         }
+      },
+      correct_answer_to_int_array: function(string_answers){
+        var int_array_answers = string_answers.split(',').map(function(item) {
+                    return parseInt(item, 10)
+                  })
+        return int_array_answers
       },
       get_correct_answers: function () {
         let result = [];
