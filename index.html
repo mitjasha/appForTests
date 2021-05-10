@@ -14,9 +14,9 @@
 
 <div id="app" class="col-lg-12">
   <div>
-    <b-button id="addTest-btn" @click.prevent="show_modal"> Добавить вопрос </b-button>
+    <b-button id="addTest-btn" @click.prevent="show_modal" v-if="!start_flag"> Добавить вопрос </b-button>
     <!-- <b-button id="toggle-btn" @click="toggle_modal">Toggle Modal</b-button> -->
-    <b-button id="startTest-btn" @click.prevent="start_test"> Начать тест </b-button>
+    <b-button id="startTest-btn" @click.prevent="start_test"> {{start_flag ? `Отменить тест` : `Начать тест`}}  </b-button>
 
     <b-modal ref="my-modal" hide-footer title="Добавление вопроса">
       <div class="d-block text-center">
@@ -31,8 +31,8 @@
             </div>
             <label>Введите номера правильных ответов через запятую. Нумерация начинается с 1</label>
             <div>
-              <b-input v-model.trim="new_question.correct_answers">              
-            </div>            
+              <b-input v-model.trim="new_question.correct_answers_as_str">
+            </div>
         </div>
       </div>
       <br>
@@ -53,9 +53,9 @@
         </div>
       </li>
     </ul>
-    <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers()"> Ответ </button>
-    
-  </div>    
+    <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers"> Ответ </button>
+
+  </div>
     <div v-if="!!test_result">
       Правильных ответов {{test_result}} из {{questions.length}}
       <br>
@@ -218,7 +218,7 @@
             correct_answers: [1, 2, 3, 4]
           }
         ],
-        start_flag: null,
+        start_flag: false,
         test_result: null,
         new_question: this.create_new_question()
       }
@@ -236,13 +236,43 @@
       //   this.$refs['my-modal'].toggle('#toggle-btn')
       // },
       start_test(){
-        this.start_flag = 1 - this.start_flag
+        this.start_flag = !this.start_flag
         this.test_result = null
+        this.questions.forEach(question=>{
+          question.answers.forEach(answer => {
+            answer.mark = false
+          })
+        })
+      },
+      verify_answers: function () {
+        let flag = true;
+        this.new_question.answers.forEach((answer, index) => {
+            if (!!!answer.answer) {
+              alert(`empty input ${index + 1}`)
+              flag = false
+            }
+          })
+        return flag
+      },
+      verify_correct_answers: function () {
+        this.new_question.correct_answers.forEach((answer, index) => {
+          if (!isNaN(answer)) {
+            this.new_question.correct_answers[index] = Number(answer)
+            // if (1 > this.new_question.correct_answers[index] > 4) {
+            //   alert(`wrong type of answer ${index + 1}`)
+            // }
+          } else {
+            alert(`wrong type of answer ${index + 1}`)
+          }
+        })
       },
       add_new_question_to_questions: function () {
-        this.new_question.correct_answers = this.new_question.correct_answers.split(",")
-        this.questions.push(this.new_question);
-        this.new_question = this.create_new_question();
+        this.new_question.correct_answers = this.correct_answer_to_int_array()
+        if (this.verify_answers()) {
+          delete this.new_question.correct_answers_as_str
+          this.questions.push(this.new_question);
+          this.new_question = this.create_new_question();
+        }
       },
       create_new_question: function () {
         return {
@@ -251,33 +281,35 @@
             answers: [
               {
                 id: 1,
-                answer: "",
+                answer: null,
                 mark: false
               },
               {
                 id: 2,
-                answer: "",
+                answer: null,
                 mark: false
               },
               {
                 id: 3,
-                answer: "",
+                answer: null,
                 mark: false
               },
               {
                 id: 4,
-                answer: "",
+                answer: null,
                 mark: false
               }
             ],
-            correct_answers: []
+            correct_answers_as_str: null,
+            correct_answers: [],
         }
       },
-      correct_answer_to_int_array: function(string_answers){
-        var int_array_answers = string_answers.split(',').map(function(item) {
-                    return parseInt(item, 10)
-                  })
-        return int_array_answers
+      correct_answer_to_int_array: function(){
+        if (!!!this.new_question.correct_answers_as_str) {
+          alert("VSE PROPALO"); return
+        }
+        this.new_question.correct_answers = this.new_question.correct_answers_as_str.split(',')
+        this.verify_correct_answers()
       },
       get_correct_answers: function () {
         let result = [];
@@ -291,20 +323,29 @@
       },
       accept_answers: function () {
         let result = [];
+        let notAnsweredQuestion = null
         this.questions.forEach((question, index)=> {
           let questionAnswer = {}
           questionAnswer = []
+          let notAnswered = true
           question.answers.forEach(answer => {
             if (answer.mark) {
+              notAnswered = false;
               questionAnswer.push(answer.id)
             }
           })
-          console.log(JSON.stringify(this.questions[index].correct_answers))
+          if (notAnswered) {
+            notAnsweredQuestion = index + 1
+            alert(`empty answer ${notAnsweredQuestion}`)
+          }
           if (JSON.stringify(questionAnswer) === JSON.stringify(this.questions[index].correct_answers)) {
             result.push(1)
           }
         })
-        this.test_result = result.length.toString()        
+        if (notAnsweredQuestion !== null) {
+          return false
+        }
+        this.test_result = result.length.toString()
       },
     },
     // хук жизненного цикла экзепляра VueJS. при монтировании экземпляра будут выполнены инструкции внутри хука
