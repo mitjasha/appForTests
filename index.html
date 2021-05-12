@@ -46,7 +46,7 @@
       <!-- цикл for в контексте VueJS  v-for="sequence_element, index in sequence"  -->
 
       <li class="list-group-item" v-for="question, index in questions">
-        <span> {{question.content}} </span>
+        <span> {{question.id}}. {{question.content}} </span>
         <div v-for="answer, index in question.answers">
           <input type="checkbox" v-model="question.answers[index].mark" :disabled="!!test_result">
           <label> {{answer.answer}} </label>
@@ -244,35 +244,47 @@
           })
         })
       },
+      verify_question_text: function () {
+        let flag = true;
+        if (!!!this.new_question.content) {
+          alert("Вы не ввели текст вопроса. Попробуйте добавить вопрос заново.")
+          flag = false
+        }          
+        return flag
+      },
       verify_answers: function () {
         let flag = true;
         this.new_question.answers.forEach((answer, index) => {
             if (!!!answer.answer) {
-              alert(`empty input ${index + 1}`)
+              alert(`Вы не ввели текст ${index + 1} варианта ответа. Попробуйте добавить вопрос заново. `)
               flag = false
             }
           })
         return flag
       },
       verify_correct_answers: function () {
+        let flag = true
         this.new_question.correct_answers.forEach((answer, index) => {
           if (!isNaN(answer)) {
-            this.new_question.correct_answers[index] = Number(answer)
-            // if (1 > this.new_question.correct_answers[index] > 4) {
-            //   alert(`wrong type of answer ${index + 1}`)
-            // }
+            this.new_question.correct_answers[index] = Number(answer)  
+            if (1 > this.new_question.correct_answers[index] || this.new_question.correct_answers[index] > 4) {
+              alert(`Поле может содержать только уникальные цифры 1, 2, 3, 4, разделенные запятой. Попробуйте добавить вопрос заново.`)
+              flag = false
+            }          
           } else {
-            alert(`wrong type of answer ${index + 1}`)
+            alert(`Поле может содержать только уникальные цифры 1, 2, 3, 4, разделенные запятой. Попробуйте добавить вопрос заново. Неверный тип ответа ${index + 1}`)
+            flag = false
           }
         })
+        return flag
       },
-      add_new_question_to_questions: function () {
-        this.new_question.correct_answers = this.correct_answer_to_int_array()
-        if (this.verify_answers()) {
+      add_new_question_to_questions: function () {        
+        if (this.verify_question_text() && this.verify_answers() && this.correct_answer_to_array()) {
           delete this.new_question.correct_answers_as_str
-          this.questions.push(this.new_question);
-          this.new_question = this.create_new_question();
-        }
+          this.new_question.id = this.questions.length + 1
+          this.questions.push(this.new_question)
+          this.new_question = this.create_new_question()          
+          }    
       },
       create_new_question: function () {
         return {
@@ -304,19 +316,22 @@
             correct_answers: [],
         }
       },
-      correct_answer_to_int_array: function(){
+      correct_answer_to_array: function(){
+        let flag = true
         if (!!!this.new_question.correct_answers_as_str) {
-          alert("VSE PROPALO"); return
-        }
-        this.new_question.correct_answers = this.new_question.correct_answers_as_str.split(',')
-        this.verify_correct_answers()
+          alert("Вы не ввели правильные варианты ответов. Попробуйте добавить вопрос заново.") 
+          flag = false
+        }else{
+          this.new_question.correct_answers = this.new_question.correct_answers_as_str.split(',')        
+        flag = this.verify_correct_answers()
+        }        
+        return flag    
       },
       get_correct_answers: function () {
         let result = [];
         this.questions.forEach(question => {
           let t = {}
           t[question.id] = question.correct_answers
-          console.log("LENGTH", t[question.id].length)
           result.push(t)
         })
         return result
@@ -336,7 +351,7 @@
           })
           if (notAnswered) {
             notAnsweredQuestion = index + 1
-            alert(`empty answer ${notAnsweredQuestion}`)
+            alert(`Все вопросы должны иметь хотя бы один выбранный вариант ответа. Проверьте правильность заполнения ${notAnsweredQuestion} вопроса.`)
           }
           if (JSON.stringify(questionAnswer) === JSON.stringify(this.questions[index].correct_answers)) {
             result.push(1)
