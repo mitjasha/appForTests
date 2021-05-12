@@ -13,12 +13,12 @@
 <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
 
 <div id="app" class="col-lg-12">
-  <div>
-    <b-button id="addTest-btn" @click.prevent="show_modal" v-if="!start_flag"> Добавить вопрос </b-button>
-    <!-- <b-button id="toggle-btn" @click="toggle_modal">Toggle Modal</b-button> -->
+  
+  <div> 
+    <b-button id="addTest-btn" @click.prevent="show_modal" v-if="!start_flag"> Добавить вопрос </b-button>    
     <b-button id="startTest-btn" @click.prevent="start_test"> {{start_flag ? `Отменить тест` : `Начать тест`}}  </b-button>
-
-    <b-modal ref="my-modal" hide-footer title="Добавление вопроса">
+     <!-- Add test question block -->
+    <b-modal ref="my-modal" hide-footer title="Добавление вопроса">     
       <div class="d-block text-center">
         <div>
           <label>Введите текст вопроса</label>
@@ -37,14 +37,13 @@
       </div>
       <br>
       <b-button @click.prevent="add_new_question_to_questions"> Добавить </b-button>
-      <b-button id="close-btn" variant="outline-danger" @click.prevent="hide_modal"> Закрыть </b-button>
-      <!-- <b-button class="mt-2" variant="outline-warning" block @click="toggle_modal">Toggle Me</b-button> -->
+      <b-button id="close-btn" variant="outline-danger" @click.prevent="hide_modal"> Закрыть </b-button>      
     </b-modal>
   </div>
-  <div v-if="!!start_flag">
+  <!-- Test question block -->
+  <div v-if="!!start_flag" style="width: 1000px;">
     <ul class="list-group">
-      <!-- цикл for в контексте VueJS  v-for="sequence_element, index in sequence"  -->
-
+      <!-- Cycle for in the context of VueJS  v-for="sequence_element, index in sequence"  -->
       <li class="list-group-item" v-for="question, index in questions">
         <span> {{question.id}}. {{question.content}} </span>
         <div v-for="answer, index in question.answers">
@@ -53,22 +52,14 @@
         </div>
       </li>
     </ul>
-    <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers"> Ответ </button>
-
+    <button v-if="!!!test_result" class="btn btn-danger" @click.prevent="accept_answers"> Отправить ответ </button>
   </div>
-    <div v-if="!!test_result">
+  <div v-if="!!test_result">
       Правильных ответов {{test_result}} из {{questions.length}}
       <br>
       <b-button variant="outline-danger" @click.prevent="start_test"> Пройти тест ещё раз </b-button>
-    </div>
+  </div>  
 </div>
-
-
-<script>
-    // let axios_instance = axios.create(
-    // );
-  </script>
-
 
 <script>
 
@@ -113,7 +104,6 @@
                 id: 1,
                 answer: "Функциональным тестированием",
                 mark: false,
-
               },
               {
                 id: 2,
@@ -141,7 +131,6 @@
                 id: 1,
                 answer: "Процесс составления тестовых сценариев с целью максимального охвата функций, операторов и логики ПО",
                 mark: false,
-
               },
               {
                 id: 2,
@@ -169,11 +158,10 @@
                 id: 1,
                 answer: "Каждая часть знания должна иметь единственное, непротиворечивое и авторитетное представление в рамках системы",
                 mark: false,
-
               },
               {
                 id: 2,
-                answer: "Это принцип уменьшения количества повторений в коде, обращение к единственному источнику - или «фрагменту» - многократно используемого кода всякий раз, когда он вам нужен",
+                answer: "Это принцип уменьшения количества повторений в коде",
                 mark: false
               },
               {
@@ -197,7 +185,6 @@
                 id: 1,
                 answer: "Несколько раз ввести неправильный код от домофона",
                 mark: false,
-
               },
               {
                 id: 2,
@@ -229,13 +216,8 @@
       },
       hide_modal() {
         this.$refs['my-modal'].hide()
-      },
-      // toggle_modal() {
-      //   // We pass the ID of the button that we want to return focus to
-      //   // when the modal has hidden
-      //   this.$refs['my-modal'].toggle('#toggle-btn')
-      // },
-      start_test(){
+      },           
+      start_test(){ // Function for reset some variables when starting testing
         this.start_flag = !this.start_flag
         this.test_result = null
         this.questions.forEach(question=>{
@@ -244,7 +226,7 @@
           })
         })
       },
-      verify_question_text: function () {
+      verify_question_text: function () { 
         let flag = true;
         if (!!!this.new_question.content) {
           alert("Вы не ввели текст вопроса. Попробуйте добавить вопрос заново.")
@@ -252,7 +234,7 @@
         }          
         return flag
       },
-      verify_answers: function () {
+      verify_answers: function () { 
         let flag = true;
         this.new_question.answers.forEach((answer, index) => {
             if (!!!answer.answer) {
@@ -262,7 +244,7 @@
           })
         return flag
       },
-      verify_correct_answers: function () {
+      verify_correct_answers: function () { 
         let flag = true
         this.new_question.correct_answers.forEach((answer, index) => {
           if (!isNaN(answer)) {
@@ -286,7 +268,7 @@
           this.new_question = this.create_new_question()          
           }    
       },
-      create_new_question: function () {
+      create_new_question: function () { // new question template
         return {
             id: null,
             content: "",
@@ -316,7 +298,7 @@
             correct_answers: [],
         }
       },
-      correct_answer_to_array: function(){
+      correct_answer_to_array: function(){ // correcting and checking entered test key
         let flag = true
         if (!!!this.new_question.correct_answers_as_str) {
           alert("Вы не ввели правильные варианты ответов. Попробуйте добавить вопрос заново.") 
@@ -324,6 +306,7 @@
         }else{
           this.new_question.correct_answers = this.new_question.correct_answers_as_str.split(',')        
         flag = this.verify_correct_answers()
+        this.new_question.correct_answers.sort()
         }        
         return flag    
       },
@@ -338,12 +321,13 @@
       },
       accept_answers: function () {
         let result = [];
+        let mistakes = []
         let notAnsweredQuestion = null
         this.questions.forEach((question, index)=> {
           let questionAnswer = {}
           questionAnswer = []
           let notAnswered = true
-          question.answers.forEach(answer => {
+          question.answers.forEach(answer => { // Check availability of answers
             if (answer.mark) {
               notAnswered = false;
               questionAnswer.push(answer.id)
@@ -355,18 +339,25 @@
           }
           if (JSON.stringify(questionAnswer) === JSON.stringify(this.questions[index].correct_answers)) {
             result.push(1)
+          }else{
+            mistakes.push(index + 1)
           }
         })
         if (notAnsweredQuestion !== null) {
           return false
         }
         this.test_result = result.length.toString()
+        if (this.test_result !== this.questions.length){
+          alert (`    Вы неправильно ответили на вопросы: ${mistakes}
+                          Ваш результат ${this.test_result} из ${this.questions.length}`)
+        }else {
+          alert (`Ваш результат ${this.test_result} из ${this.questions.length}. Вы молодец!`)
+        }
+        
       },
-    },
-    // хук жизненного цикла экзепляра VueJS. при монтировании экземпляра будут выполнены инструкции внутри хука
+    },    
     mounted: function () {
-      // вызываем метод экземпляра для получения списка объектов
-      // this.get_department_list()
+    
     }
   })
 </script>
